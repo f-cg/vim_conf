@@ -1,0 +1,17 @@
+{
+  "suggest.enablePreselect": true,
+  "signature.enable":true,
+  "diagnostic.displayByAle":true,
+  "suggest.echodocSupport": true,
+  "suggest.maxCompleteItemCount": 20,
+  "eslint.filetypes": [
+    "javascript",
+    "typescript",
+    "typescriptreact",
+    "javascriptreact"
+  ],
+  "coc.preferences.extensionUpdateCheck": "never",
+  "coc.preferences.noselect": false,
+  "coc.preferences.formatOnSaveFiletypes": []
+}
+
