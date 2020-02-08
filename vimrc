@@ -27,6 +27,7 @@ Plug 'morhetz/gruvbox'
 Plug 'lifepillar/vim-gruvbox8'
 Plug 'NLKNguyen/papercolor-theme'
 Plug 'KeitaNakamura/neodark.vim'
+Plug 'sergio-ivanuzzo/optcmd'
 call plug#end()
 "----------------------}}}
 
@@ -41,6 +42,7 @@ augroup END
 set nu
 set hlsearch
 "set laststatus=2
+set autochdir
 nnoremap <SPACE> <Nop>
 let mapleader = "\<space>"
 nnoremap <silent><expr> <F2> (&hls && v:hlsearch ? ':nohls' : ':set hls')."\n"
@@ -58,17 +60,63 @@ augroup END
 "set completeopt=menu,menuone,preview,noselect,noinsert
 set completeopt-=preview
 "set cul " highlight current line
+nnoremap <leader>ev :vsplit $MYVIMRC<cr>
+nnoremap <leader>sv :source $MYVIMRC<cr>
 "----------}}}
 
+"vim run file actions ----------{{{
+function! GetConfirmChoicesString(choices)
+        let id=1
+        let result=""
+        for choice in a:choices
+                let result.="&".id.choice."\n"
+                let id+=1
+        endfor
+        return result
+endfunction
+
+function! RunProject()
+        let defaultcmd={'python':'python3 %', 'javascript':'node %', 'sh':'sh %', 'html':'firefox %'}
+        let level=5
+        let runcmdfile=".run"
+        while(level>0)
+                if filereadable(expand('%:p:h')."/".runcmdfile)
+                        break
+                endif
+                let runcmdfile="../".runcmdfile
+                let level-=1
+        endwhile
+        if level<=0
+                if has_key(defaultcmd,&ft)
+                        execute "!".defaultcmd[&ft]
+                        return
+                endif
+                echohl WarningMsg | echo "readable .run file not found!" | echohl None
+                return
+        endif
+        let runcmdfilefullpath=expand('%:p:h')."/".runcmdfile
+        let content=readfile(runcmdfilefullpath)
+        " 去掉注释和空行,注释以#开头,不支持去掉放在命令后面的注释
+        let commands=filter(content,'v:val !~# "^\\s*#.*" && v:val !~# "^\\s*$"')
+        let choices=GetConfirmChoicesString(commands)
+        let choice=confirm("Which command to run?", choices, 0)
+        if choice==0
+                return
+        else
+                execute "!".commands[choice-1]
+        endif
+endfunction
+" nmap <F5> <esc>:w<cr>:!python3 %<cr>
+nmap <F5> :call RunProject()<CR>
+"------------}}}
+
+" Mark settings. (this is a plugin)------------------{{{
 nmap ,m <Plug>MarkSet
 vmap ,m <Plug>MarkSet
 nmap ,r <Plug>MarkRegex
 vmap ,r <Plug>MarkRegex
 nmap ,n <Plug>MarkClear
-
-nmap <F5> <esc>:w<cr>:!python3 %<cr>
-nnoremap <leader>ev :vsplit $MYVIMRC<cr>
-nnoremap <leader>sv :source $MYVIMRC<cr>
+"--------------}}}
 
 " jedi-vim settings. -------------------------------------------- {{{
 "jedi-vim: show doc K, completion, goto definition \d,goto assignment \g show usages \n, rename var \r--
@@ -266,9 +314,10 @@ endfunction
 
 " Highlight symbol under cursor on CursorHold
 "autocmd CursorHold * silent call CocActionAsync('highlight')
-if (index(['javascript'],&ft)>=0)
-	nmap <silent> <leader>h :call CocActionAsync('highlight')<CR>
-endif
+" if (index(['javascript'],&ft)>=0)
+	" nmap <silent> <leader>h :call CocActionAsync('highlight')<CR>
+" endif
+autocmd FileType javascript nmap <buffer> <silent> <leader>h :call CocActionAsync('highlight')<CR>
 
 " Remap for rename current word
 nmap <leader>r <Plug>(coc-rename)
@@ -342,3 +391,25 @@ packloadall
 " All messages and errors will be ignored.
 silent! helptags ALL
 "---------------}}}
+
+"theme actions-------------------------------------{{{
+function! ChooseTheme()
+        let themes=["default", "gruvbox", "gruvbox8", "PaperColor", "neodark", "gruvbox8_soft", "gruvbox8_hard"]
+        let choices=GetConfirmChoicesString(themes)
+        let choice=confirm("Which theme?", choices, 0)
+        if choice==0
+                return
+        else
+            execute "colorscheme ".themes[choice-1]
+        endif
+endfunction
+function! ToggleDark()
+        if &background=="light"
+                set background=dark
+        else
+                set background=light
+        endif
+endfunction
+nnoremap <leader>zt :call ChooseTheme()<CR>
+nnoremap <leader>zd :call ToggleDark()<CR>
+"------------}}}
