@@ -10,8 +10,17 @@
     "typescriptreact",
     "javascriptreact"
   ],
+  "suggest.removeDuplicateItems": true,
   "coc.preferences.extensionUpdateCheck": "never",
   "coc.preferences.noselect": false,
-  "coc.preferences.formatOnSaveFiletypes": []
+  "coc.preferences.formatOnSaveFiletypes": [],
+    "languageserver": {
+    "clangd": {
+      "command": "clangd",
+      "args": ["--background-index"],
+      "rootPatterns": ["compile_flags.txt", "compile_commands.json", ".git/", ".hg/"],
+      "filetypes": ["c", "cpp", "objc", "objcpp"]
+    }
+  }
 }
 

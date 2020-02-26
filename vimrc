@@ -7,8 +7,8 @@ call plug#begin('~/.vim/plugged')
 Plug 'SirVer/ultisnips'
 Plug 'honza/vim-snippets'
 Plug 'scrooloose/nerdcommenter'
-Plug 'maralla/completor.vim', {'for': ['python', 'c', 'cpp']}
-Plug 'w0rp/ale'
+Plug 'maralla/completor.vim', {'for': ['python']}
+"Plug 'w0rp/ale'
 Plug 'davidhalter/jedi-vim', {'for': 'python'}
 "Plug 'brookhong/cscope.vim'
 Plug 'vim-scripts/autoload_cscope.vim'
@@ -20,7 +20,7 @@ Plug 'vim-scripts/ifdef-highlighting', {'for': ['c', 'cpp']}
 Plug 'psliwka/vim-smoothie'
 Plug 'JamshedVesuna/vim-markdown-preview', {'for': 'markdown'}
 Plug 'lifepillar/pgsql.vim', {'for': 'sql'}
-Plug 'neoclide/coc.nvim', {'branch': 'release', 'for': ['html', 'javascript', 'css', 'json']}
+Plug 'neoclide/coc.nvim', {'branch': 'release', 'for': ['c', 'cpp', 'html', 'javascript', 'css', 'json']}
 Plug 'gko/vim-coloresque'
 "color themes below
 Plug 'morhetz/gruvbox'
@@ -46,7 +46,8 @@ set autochdir
 nnoremap <SPACE> <Nop>
 let mapleader = "\<space>"
 nnoremap <silent><expr> <F2> (&hls && v:hlsearch ? ':nohls' : ':set hls')."\n"
-set dictionary=~/.vim/dict.txt
+set dictionary+=/usr/share/dict/words
+set dictionary+=~/.vim/dict.txt
 "zR open all, zr open level, zM close all, zm close level
 set foldmethod=indent
 "set foldmethod=syntax
@@ -62,10 +63,15 @@ set completeopt-=preview
 "set cul " highlight current line
 nnoremap <leader>ev :vsplit $MYVIMRC<cr>
 nnoremap <leader>sv :source $MYVIMRC<cr>
+autocmd FileType javascript setlocal shiftwidth=4 tabstop=4 softtabstop=0 expandtab
+autocmd FileType c setlocal shiftwidth=4 tabstop=4 softtabstop=0 noexpandtab
+
 "----------}}}
 
 "vim run file actions ----------{{{
 function! GetConfirmChoicesString(choices)
+" TODO: 适应选项数量大于10个的情况，适应ascii码从49到126总共78个选项,
+" 增加正则表达式应用于不同文件
         let id=1
         let result=""
         for choice in a:choices
@@ -75,8 +81,25 @@ function! GetConfirmChoicesString(choices)
         return result
 endfunction
 
+function! SaveAndExe(cmd)
+        if &modified
+                execute "w"
+        endif
+        execute "!".a:cmd
+endfunction
+
+function! RunDefaultCmd()
+        let defaultcmd={'python':'python3 %', 'javascript':'node %', 'sh':'sh %', 'html':'firefox %', 'c':'gcc % && ./a.out'}
+        if has_key(defaultcmd, &ft)
+                call SaveAndExe(defaultcmd[&ft])
+                return 1
+        else
+                return 0
+        endif
+
+endfunction
+
 function! RunProject()
-        let defaultcmd={'python':'python3 %', 'javascript':'node %', 'sh':'sh %', 'html':'firefox %'}
         let level=5
         let runcmdfile=".run"
         while(level>0)
@@ -86,24 +109,53 @@ function! RunProject()
                 let runcmdfile="../".runcmdfile
                 let level-=1
         endwhile
+        " 找不到run文件
         if level<=0
-                if has_key(defaultcmd,&ft)
-                        execute "!".defaultcmd[&ft]
-                        return
-                endif
+                if !RunDefaultCmd()
                 echohl WarningMsg | echo "readable .run file not found!" | echohl None
+                endif
                 return
         endif
+        " 找到了run文件
         let runcmdfilefullpath=expand('%:p:h')."/".runcmdfile
         let content=readfile(runcmdfilefullpath)
         " 去掉注释和空行,注释以#开头,不支持去掉放在命令后面的注释
-        let commands=filter(content,'v:val !~# "^\\s*#.*" && v:val !~# "^\\s*$"')
-        let choices=GetConfirmChoicesString(commands)
-        let choice=confirm("Which command to run?", choices, 0)
-        if choice==0
-                return
+        let file_pattern_match=0
+        let commands=[]
+        for line in content
+                if (line =~# "^\\s*#[^!]") || (line =~# "^\\s*$")
+                        continue
+                elseif line =~# "^\\s*#!"
+                        if file_pattern_match==1
+                                break
+                        endif
+                        let file_pattern = trim(trim(line)[2:])
+                        if expand("%") =~# file_pattern
+                               let file_pattern_match=1
+                        endif
+                elseif file_pattern_match==1
+                        call add(commands, line)
+                else
+                        continue
+                endif
+        endfor
+        if len(commands)==0 && file_pattern_match==0
+                "没有指明匹配规则
+                RunDefaultCmd()
+        elseif len(commands)==0 && file_pattern_match==1
+                "指明了匹配规则，但命令列表为空
+                echo "commandlist is blank"
+        endif
+        if len(commands)==1
+                call SaveAndExe(commands[0])
         else
-                execute "!".commands[choice-1]
+                let choices=GetConfirmChoicesString(commands)
+                let choice=confirm("Which command to run?", choices, 0)
+                if choice==0
+                        return
+                else
+                        call SaveAndExe(commands[choice-1])
+                endif
         endif
 endfunction
 " nmap <F5> <esc>:w<cr>:!python3 %<cr>
@@ -130,7 +182,6 @@ endif
 " ale settings. ale: lint fix autoformat ---------------------- {{{
 " see git:ale/ale_linters ----{{{
 let g:ale_linters = {
-\   'c': ['clang'],
 \   'c++': ['clang'],
 \   'python': ['flake8'],
 \   'html': ['fecs','tidy'],
@@ -176,7 +227,11 @@ nmap <silent> <C-j> <Plug>(ale_next_wrap)
 nmap <F8> <Plug>(ale_fix)
 let g:ale_completion_enabled=0
 " format style configuration of linux kernel code: torvalds/linux/master/.clang-format
-let g:ale_c_clangformat_options='-style=/home/lily/.vim/.clang-format'
+let g:ale_c_clangformat_options='-style=file'
+nn <silent> <C-d> :ALEGoToDefinition<cr>
+nn <silent> <M-r> :ALEFindReferences<cr>
+nn <silent> <M-a> :ALESymbolSearch<cr>
+nn <silent> <M-h> :ALEHover<cr>
 "---------------------------------------}}}
 
 " completor settings. ----------------------- --------------------- {{{
@@ -184,6 +239,10 @@ let g:completor_python_binary = '/usr/bin/python3'
 let g:completor_clang_binary = '/usr/bin/clang'
 let g:completor_complete_options='menu,menuone,noinsert'
 "noselect,preview
+" noremap <silent> <leader>d :call completor#do('definition')<CR>
+" noremap <silent> <leader>c :call completor#do('doc')<CR>
+" noremap <silent> <leader>f :call completor#do('format')<CR>
+" noremap <silent> <leader>s :call completor#do('hover')<CR>
 "--------------------------}}}
 
 " taglist settings. -------------------------------------------- {{{
@@ -301,9 +360,6 @@ nmap <silent> <leader>t <Plug>(coc-type-definition)
 nmap <silent> <leader>i <Plug>(coc-implementation)
 nmap <silent> <leader>g <Plug>(coc-references)
 
-" Use K to show documentation in preview window
-nnoremap <silent> K :call <SID>show_documentation()<CR>
-
 function! s:show_documentation()
   if (index(['vim','help'], &filetype) >= 0)
     execute 'h '.expand('<cword>')
@@ -312,12 +368,14 @@ function! s:show_documentation()
   endif
 endfunction
 
+augroup coc_mappings
+    autocmd!
+    autocmd FileType c,cpp,javascript,html,css,json nnoremap <silent> K :call <SID>show_documentation()<CR>
+    autocmd FileType c,cpp,javascript,html,css,json nmap <buffer> <silent> <leader>h :call CocActionAsync('highlight')<CR>
+augroup END
+
 " Highlight symbol under cursor on CursorHold
 "autocmd CursorHold * silent call CocActionAsync('highlight')
-" if (index(['javascript'],&ft)>=0)
-	" nmap <silent> <leader>h :call CocActionAsync('highlight')<CR>
-" endif
-autocmd FileType javascript nmap <buffer> <silent> <leader>h :call CocActionAsync('highlight')<CR>
 
 " Remap for rename current word
 nmap <leader>r <Plug>(coc-rename)
@@ -380,6 +438,39 @@ nnoremap <silent> <space>k  :<C-u>CocPrev<CR>
 " Resume latest coc list
 nnoremap <silent> <space>p  :<C-u>CocListResume<CR>
 "------------}}}
+" popup scroll--------------------------{{{
+  function FindCursorPopUp()
+     let radius = get(a:000, 0, 2)
+     let srow = screenrow()
+     let scol = screencol()
+     " it's necessary to test entire rect, as some popup might be quite small
+     for r in range(srow - radius, srow + radius)
+       for c in range(scol - radius, scol + radius)
+         let winid = popup_locate(r, c)
+         if winid != 0
+           return winid
+         endif
+       endfor
+     endfor
+
+     return 0
+   endfunction
+
+   function ScrollPopUp(down)
+     let winid = FindCursorPopUp()
+     if winid == 0
+       return 0
+     endif
+
+     let pp = popup_getpos(winid)
+     call popup_setoptions( winid,
+           \ {'firstline' : pp.firstline + ( a:down ? 1 : -1 ) } )
+
+     return 1
+   endfunction
+nnoremap <expr> <c-d> ScrollPopUp(1) ? '<esc>' : '<c-d>'
+nnoremap <expr> <c-u> ScrollPopUp(0) ? '<esc>' : '<c-u>'
+"---------------}}}
 "-------------------------------}}}
 
 " ale settings part2 -----------------------{{{
