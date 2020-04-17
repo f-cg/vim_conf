@@ -8,7 +8,7 @@ Plug 'SirVer/ultisnips'
 Plug 'honza/vim-snippets'
 Plug 'scrooloose/nerdcommenter'
 Plug 'maralla/completor.vim', {'for': ['python']}
-"Plug 'w0rp/ale'
+Plug 'w0rp/ale'
 Plug 'davidhalter/jedi-vim', {'for': 'python'}
 "Plug 'brookhong/cscope.vim'
 Plug 'vim-scripts/autoload_cscope.vim'
@@ -20,7 +20,7 @@ Plug 'vim-scripts/ifdef-highlighting', {'for': ['c', 'cpp']}
 Plug 'psliwka/vim-smoothie'
 Plug 'JamshedVesuna/vim-markdown-preview', {'for': 'markdown'}
 Plug 'lifepillar/pgsql.vim', {'for': 'sql'}
-Plug 'neoclide/coc.nvim', {'branch': 'release', 'for': ['c', 'cpp', 'html', 'javascript', 'css', 'json']}
+Plug 'neoclide/coc.nvim', {'branch': 'release', 'for': ['c', 'cpp', 'html', 'java', 'javascript', 'css', 'json']}
 Plug 'gko/vim-coloresque'
 "color themes below
 Plug 'morhetz/gruvbox'
@@ -89,7 +89,7 @@ function! SaveAndExe(cmd)
 endfunction
 
 function! RunDefaultCmd()
-        let defaultcmd={'python':'python3 %', 'javascript':'node %', 'sh':'sh %', 'html':'firefox %', 'c':'gcc % && ./a.out'}
+        let defaultcmd={'python':'python3 %', 'javascript':'node %', 'sh':'sh %', 'html':'firefox %', 'c':'gcc % -O3 && ./a.out','cpp':'g++ % -O3 && ./a.out'}
         if has_key(defaultcmd, &ft)
                 call SaveAndExe(defaultcmd[&ft])
                 return 1
@@ -182,7 +182,7 @@ endif
 " ale settings. ale: lint fix autoformat ---------------------- {{{
 " see git:ale/ale_linters ----{{{
 let g:ale_linters = {
-\   'c++': ['clang'],
+\   'c': ['clangd'],
 \   'python': ['flake8'],
 \   'html': ['fecs','tidy'],
 \   'css': ['fecs'],
@@ -258,7 +258,7 @@ let Tlist_Inc_Winwidth=0
 
 " windowmanager settings. -------------------------------------------- {{{
 let g:winManagerWindowLayout='FileExplorer|TagList'
-nmap wm :WMToggle<cr>
+nmap <C-w>m :WMToggle<cr>
 "---------------}}}
 
 "autoload-cscope settings.-------------------------------------{{{
