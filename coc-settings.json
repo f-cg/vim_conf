@@ -21,6 +21,10 @@
       "rootPatterns": ["compile_flags.txt", "compile_commands.json", ".git/", ".hg/"],
       "filetypes": ["c", "cpp", "objc", "objcpp"]
     }
-  }
+  },
+   "python.linting.pylintEnabled": false,
+  "python.linting.flake8Enabled": false,
+  "python.linting.enabled": true,
+  "python.pythonPath": "/usr/bin/python3"
 }
 
