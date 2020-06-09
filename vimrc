@@ -141,7 +141,7 @@ function! RunProject()
         endfor
         if len(commands)==0 && file_pattern_match==0
                 "没有指明匹配规则
-                RunDefaultCmd()
+                call RunDefaultCmd()
         elseif len(commands)==0 && file_pattern_match==1
                 "指明了匹配规则，但命令列表为空
                 echo "commandlist is blank"
@@ -211,7 +211,7 @@ let g:ale_fixers = {
 \   'html': ['fecs'],
 \   'css': ['fecs'],
 \   'javascript': ['fecs'],
-\   'sql': ['pgformatter','sqlfmt'],
+\   'sql': ['pgformatter','sqlfmt','sqlformat'],
 \   'json': ['jq'],
 \   'sh': ['shfmt'],
 \   'java': ['uncrustify'],
