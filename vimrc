@@ -1,14 +1,17 @@
 set nocompatible              " be iMproved, required. 避免兼容vi造成很多功能缺失
 filetype plugin indent on
 "set omnifunc=syntaxcomplete#Complete 
+set mouse-=a
+" the bg color of popups
+hi Pmenu ctermbg=gray
 
 " vim-plug settings. -------------------------------------------{{{
 call plug#begin('~/.vim/plugged')
-Plug 'SirVer/ultisnips'
+Plug 'SirVer/ultisnips', {'for': ['python']}
 Plug 'honza/vim-snippets'
 Plug 'scrooloose/nerdcommenter'
 Plug 'maralla/completor.vim', {'for': ['python']}
-Plug 'w0rp/ale'
+Plug 'w0rp/ale', {'for': ['python', 'html']}
 Plug 'davidhalter/jedi-vim', {'for': 'python'}
 "Plug 'brookhong/cscope.vim'
 Plug 'vim-scripts/autoload_cscope.vim'
@@ -20,7 +23,7 @@ Plug 'vim-scripts/ifdef-highlighting', {'for': ['c', 'cpp']}
 Plug 'psliwka/vim-smoothie'
 Plug 'JamshedVesuna/vim-markdown-preview', {'for': 'markdown'}
 Plug 'lifepillar/pgsql.vim', {'for': 'sql'}
-Plug 'neoclide/coc.nvim', {'branch': 'release', 'for': ['c', 'cpp', 'html', 'java', 'javascript', 'css', 'json']}
+Plug 'neoclide/coc.nvim', {'branch': 'release', 'for': ['c', 'cpp', 'html', 'java', 'scala', 'javascript', 'css', 'json', 'xml']}
 Plug 'gko/vim-coloresque'
 "color themes below
 Plug 'morhetz/gruvbox'
@@ -28,6 +31,7 @@ Plug 'lifepillar/vim-gruvbox8'
 Plug 'NLKNguyen/papercolor-theme'
 Plug 'KeitaNakamura/neodark.vim'
 Plug 'sergio-ivanuzzo/optcmd'
+Plug 'tpope/vim-surround'
 call plug#end()
 "----------------------}}}
 
@@ -100,7 +104,7 @@ function! RunDefaultCmd()
 endfunction
 
 function! RunProject()
-        let level=5
+        let level=10
         let runcmdfile=".run"
         while(level>0)
                 if filereadable(expand('%:p:h')."/".runcmdfile)
@@ -140,7 +144,7 @@ function! RunProject()
                 endif
         endfor
         if len(commands)==0 && file_pattern_match==0
-                "没有指明匹配规则
+                "没有指明匹配规则并且命令列表为空
                 call RunDefaultCmd()
         elseif len(commands)==0 && file_pattern_match==1
                 "指明了匹配规则，但命令列表为空
@@ -184,9 +188,9 @@ endif
 let g:ale_linters = {
 \   'c': ['clangd'],
 \   'python': ['flake8'],
-\   'html': ['fecs','tidy'],
+\   'html': ['fecs'],
 \   'css': ['fecs'],
-\   'javascript': ['fecs'],
+\   'javascript': [],
 \   'sql': ['sqlint'],
 \   'json': ['jsonlint'],
 \   'sh': ['shellcheck'],
@@ -256,7 +260,7 @@ let Tlist_Process_File_Always=1 "实时更新tags
 let Tlist_Inc_Winwidth=0
 "---------------}}}
 
-" windowmanager settings. -------------------------------------------- {{{
+" winmanager settings. -------------------------------------------- {{{
 let g:winManagerWindowLayout='FileExplorer|TagList'
 nmap <C-w>m :WMToggle<cr>
 "---------------}}}
@@ -350,9 +354,6 @@ set shortmess+=c
 set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
 "-----------}}}
 "coc action settings--------------{{{
-" Use `[g` and `]g` to navigate diagnostics
-" nmap <silent> [g <Plug>(coc-diagnostic-prev)
-" nmap <silent> ]g <Plug>(coc-diagnostic-next)
 
 " Remap keys for gotos
 nmap <silent> <leader>d <Plug>(coc-definition)
@@ -370,8 +371,12 @@ endfunction
 
 augroup coc_mappings
     autocmd!
-    autocmd FileType c,cpp,javascript,html,css,json nnoremap <silent> K :call <SID>show_documentation()<CR>
-    autocmd FileType c,cpp,javascript,html,css,json nmap <buffer> <silent> <leader>h :call CocActionAsync('highlight')<CR>
+    autocmd FileType c,cpp,java,javascript,html,css,json nnoremap <silent> K :call <SID>show_documentation()<CR>
+    autocmd FileType c,cpp,java,javascript,html,css,json nnoremap <silent> <F8> :call CocAction('format')<CR>
+    " navigate diagnostics
+    autocmd FileType c,cpp,java,javascript,html,css,json nmap <silent> <C-k> <Plug>(coc-diagnostic-prev)
+    autocmd FileType c,cpp,java,javascript,html,css,json nmap <silent> <C-j> <Plug>(coc-diagnostic-next)
+    autocmd FileType c,cpp,java,javascript,html,css,json nmap <buffer> <silent> <leader>h :call CocActionAsync('highlight')<CR>
 augroup END
 
 " Highlight symbol under cursor on CursorHold
@@ -412,10 +417,10 @@ nmap <silent> <TAB> <Plug>(coc-range-select)
 xmap <silent> <TAB> <Plug>(coc-range-select)
 
 " Use `:Format` to format current buffer
-"command! -nargs=0 Format :call CocAction('format')
+command! -nargs=0 Format :call CocAction('format')
 
 " Use `:Fold` to fold current buffer
-"command! -nargs=? Fold :call     CocAction('fold', <f-args>)
+command! -nargs=? Fold :call     CocAction('fold', <f-args>)
 
 " use `:OR` for organize import of current buffer
 command! -nargs=0 OR   :call     CocAction('runCommand', 'editor.action.organizeImport')
