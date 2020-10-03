@@ -11,9 +11,12 @@
     "typescriptreact",
     "javascriptreact"
   ],
+  "eslint.options": {"configFile": "/home/fcg/.eslintrc"},
+  "javascript.format.enabled": true,
+  "javascript.preferences.quoteStyle": "single",
+  "html.format.wrapLineLength": 128,
   "suggest.removeDuplicateItems": true,
   "coc.preferences.extensionUpdateCheck": "never",
-  "coc.preferences.noselect": false,
   "coc.preferences.formatOnSaveFiletypes": [],
     "languageserver": {
     "clangd": {
@@ -23,10 +26,12 @@
       "filetypes": ["c", "cpp", "objc", "objcpp"]
     }
   },
-   "python.linting.pylintEnabled": false,
-  "python.linting.flake8Enabled": false,
-  "python.linting.enabled": true,
+  // "python.linting.pylintEnabled": false,
+  // "python.linting.flake8Enabled": false,
+  // "python.linting.enabled": true,
+  // "python.jediEnabled": false,
   "python.pythonPath": "/usr/bin/python3",
-  "java.home":"/usr/lib/jvm/java-11-openjdk"
+  "java.home":"/usr/lib/jvm/java-8-openjdk",
+  "markdownlint.config": {"line_length": false}
 }
 

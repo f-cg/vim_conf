@@ -1,0 +1,18 @@
+{
+    "eslint": {
+        "env": {
+            "es6": true
+        },
+        "rules": {
+            "no-console": 0
+        }
+    },
+    "htmlcs": {
+        "viewport": false,
+	"max-len": 125
+    },
+    "htmlhint": {
+        "style-disabled": false
+    },
+
+}

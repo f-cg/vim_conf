@@ -10,6 +10,8 @@ call plug#begin('~/.vim/plugged')
 Plug 'SirVer/ultisnips'
 Plug 'honza/vim-snippets'
 Plug 'scrooloose/nerdcommenter'
+Plug 'maralla/completor.vim', {'for': ['python']}
+Plug 'w0rp/ale', {'for': ['python', 'html', 'css', 'sh', 'javascript', 'sql']}
 Plug 'davidhalter/jedi-vim', {'for': 'python'}
 "Plug 'brookhong/cscope.vim'
 Plug 'vim-scripts/autoload_cscope.vim'
@@ -21,7 +23,7 @@ Plug 'vim-scripts/ifdef-highlighting', {'for': ['c', 'cpp']}
 Plug 'psliwka/vim-smoothie'
 Plug 'JamshedVesuna/vim-markdown-preview', {'for': 'markdown'}
 Plug 'lifepillar/pgsql.vim', {'for': 'sql'}
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'neoclide/coc.nvim', {'branch': 'release', 'for': ['rust', 'markdown', 'c', 'cpp', 'html', 'java', 'scala', 'javascript', 'css', 'json', 'xml', 'sh', 'sql']}
 Plug 'gko/vim-coloresque'
 Plug 'AndrewRadev/linediff.vim'
 Plug 'sergio-ivanuzzo/optcmd'
@@ -77,12 +79,14 @@ augroup remember_folds
   autocmd BufWinLeave * mkview
   autocmd BufWinEnter * silent! loadview
 augroup END
+"set completeopt=menu,menuone,preview,noselect,noinsert
+set completeopt-=preview
 "set cul " highlight current line
 nnoremap <leader>ev :vsplit $MYVIMRC<cr>
 nnoremap <leader>sv :source $MYVIMRC<cr>
-" autocmd FileType javascript setlocal shiftwidth=4 tabstop=4 softtabstop=0 expandtab
-" autocmd FileType html setlocal shiftwidth=4 tabstop=4 softtabstop=0 expandtab
-" autocmd FileType c setlocal shiftwidth=4 tabstop=4 softtabstop=0 noexpandtab
+autocmd FileType javascript setlocal shiftwidth=4 tabstop=4 softtabstop=0 expandtab
+autocmd FileType html setlocal shiftwidth=4 tabstop=4 softtabstop=0 expandtab
+autocmd FileType c setlocal shiftwidth=4 tabstop=4 softtabstop=0 noexpandtab
 autocmd FileType json syntax match Comment +\/\/.\+$+
 
 "----------}}}
@@ -123,6 +127,81 @@ let g:rainbow_conf = {
 \		'css': 0,
 \	}
 \}
+" jedi-vim settings. -------------------------------------------- {{{
+"jedi-vim: show doc K, completion, goto definition \d,goto assignment \g show usages \n, rename var \r--
+if &ft=='python'
+let g:jedi#completions_enabled = 0
+let g:jedi#popup_select_first = 1
+" let g:jedi#show_call_signatures = 2
+endif
+"----------------}}}
+
+" ale settings. ale: lint fix autoformat ---------------------- {{{
+" see git:ale/ale_linters ----{{{
+let g:ale_linters = {
+\   'c': ['clangd'],
+\   'python': ['pylint'],
+\   'html': ['fecs'],
+\   'css': ['fecs'],
+\   'javascript': ['fecs'],
+\   'sql': ['sqlint'],
+\   'json': ['jsonlint'],
+\   'sh': ['shellcheck'],
+\   'java': ['javac'],
+\   'gitcommit': ['gitlint'],
+\   'php': ['phpcs'],
+\   'qml': ['qmllint'],
+\   'scala': ['fsc'],
+\   'xml': ['xmllint'],
+\   'awk': ['gawk'],
+\   'markdown': ['textlint'],
+\   'cmake': ['cmakelint'],
+\   'make': ['checkmake'],
+\}
+"---}}}
+
+" see ale/doc/ale-supported-languages-and-tools.txt ---{{{
+let g:ale_fixers = {
+\   'c': ['clang-format'],
+\   'cpp': ['clang-format'],
+\   'python': ['isort','autopep8'],
+\   'html': ['fecs'],
+\   'css': ['fecs'],
+\   'javascript': ['fecs'],
+\   'sql': ['sqlformat','pgformatter','sqlfmt'],
+\   'json': ['jq'],
+\   'sh': ['shfmt'],
+\   'java': ['uncrustify'],
+\   'php': ['phpcbf'],
+\   'xml': ['xmllint'],
+\   'cmake': ['cmakelint'],
+\   'markdown': ['textlint'],
+\}
+"----}}}
+
+nmap <silent> <C-k> <Plug>(ale_previous_wrap)
+nmap <silent> <C-j> <Plug>(ale_next_wrap)
+nmap <F8> <Plug>(ale_fix)
+let g:ale_completion_enabled=0
+" format style configuration of linux kernel code: torvalds/linux/master/.clang-format
+let g:ale_c_clangformat_options='-style=file'
+nn <silent> <C-d> :ALEGoToDefinition<cr>
+nn <silent> <M-r> :ALEFindReferences<cr>
+nn <silent> <M-a> :ALESymbolSearch<cr>
+nn <silent> <M-h> :ALEHover<cr>
+"---------------------------------------}}}
+
+" completor settings. ----------------------- --------------------- {{{
+let g:completor_python_binary = '/usr/bin/python3'
+" let g:completor_clang_binary = '/usr/bin/clang'
+let g:completor_complete_options='menu,menuone,noinsert'
+"noselect,preview
+" noremap <silent> <leader>d :call completor#do('definition')<CR>
+" noremap <silent> <leader>c :call completor#do('doc')<CR>
+" noremap <silent> <leader>f :call completor#do('format')<CR>
+" noremap <silent> <leader>s :call completor#do('hover')<CR>
+"--------------------------}}}
+
 " taglist settings. -------------------------------------------- {{{
 let Tlist_Ctags_Cmd='ctags' "放在环境变量里，可直接执行
 let Tlist_Use_Right_Window=0 "窗口显示在右边，0则在左边
@@ -214,7 +293,6 @@ let g:NERDToggleCheckAllLines = 1
 "coc static display settings-----------{{{
 " if hidden is not set, TextEdit might fail.
 set hidden
-let g:jedi#completions_enabled = 0
 
 " Some servers have issues with backup files, see #649
 set nobackup
@@ -247,11 +325,15 @@ function! s:show_documentation()
   endif
 endfunction
 
-nnoremap <silent> K :call <SID>show_documentation()<CR>
-nnoremap <silent> <F8> :call CocAction('format')<CR>
-nmap <silent> <C-k> <Plug>(coc-diagnostic-prev)
-nmap <silent> <C-j> <Plug>(coc-diagnostic-next)
-nmap <buffer> <silent> <leader>h :call CocActionAsync('highlight')<CR>
+augroup coc_mappings
+    autocmd!
+    autocmd FileType c,cpp,java,javascript,html,css,json,markdown,sh,xml,rust,sql nnoremap <silent> K :call <SID>show_documentation()<CR>
+    autocmd FileType c,cpp,java,javascript,html,css,json,markdown,sh,xml,rust,sql nnoremap <silent> <F8> :call CocAction('format')<CR>
+    " navigate diagnostics
+    autocmd FileType c,cpp,java,javascript,html,css,json,markdown,sh,xml,rust,sql nmap <silent> <C-k> <Plug>(coc-diagnostic-prev)
+    autocmd FileType c,cpp,java,javascript,html,css,json,markdown,sh,xml,rust,sql nmap <silent> <C-j> <Plug>(coc-diagnostic-next)
+    autocmd FileType c,cpp,java,javascript,html,css,json,markdown,sh,xml,rust,sql nmap <buffer> <silent> <leader>h :call CocActionAsync('highlight')<CR>
+augroup END
 
 " Highlight symbol under cursor on CursorHold
 "autocmd CursorHold * silent call CocActionAsync('highlight')
@@ -353,6 +435,16 @@ nnoremap <expr> <c-u> ScrollPopUp(0) ? '<esc>' : '<c-u>'
 "---------------}}}
 "-------------------------------}}}
 
+" ale settings part2 -----------------------{{{
+" Put these lines at the very end of your vimrc file.
+" Load all plugins now.
+" Plugins need to be added to runtimepath before helptags can be generated.
+packloadall
+" Load all of the helptags now, after plugins have been loaded.
+" All messages and errors will be ignored.
+silent! helptags ALL
+"---------------}}}
+
 "theme actions-------------------------------------{{{
 function! ChooseTheme()
         let themes=["default", "gruvbox", "gruvbox8", "PaperColor", "neodark", "gruvbox8_soft", "gruvbox8_hard", "zenburn", "Sunburst"]
@@ -374,3 +466,5 @@ endfunction
 nnoremap <leader>zt :call ChooseTheme()<CR>
 nnoremap <leader>zd :call ToggleDark()<CR>
 "------------}}}
+
+autocmd Filetype html setlocal ts=4 sw=4 expandtab
