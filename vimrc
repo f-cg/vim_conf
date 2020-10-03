@@ -3,11 +3,11 @@ filetype plugin indent on
 "set omnifunc=syntaxcomplete#Complete 
 set mouse-=a
 " the bg color of popups
-hi Pmenu ctermbg=gray
+" hi Pmenu ctermbg=gray
 
 " vim-plug settings. -------------------------------------------{{{
 call plug#begin('~/.vim/plugged')
-Plug 'SirVer/ultisnips'
+" Plug 'SirVer/ultisnips'
 Plug 'honza/vim-snippets'
 Plug 'scrooloose/nerdcommenter'
 Plug 'davidhalter/jedi-vim', {'for': 'python'}
@@ -16,7 +16,6 @@ Plug 'vim-scripts/autoload_cscope.vim'
 Plug 'godlygeek/tabular'
 Plug 'plasticboy/vim-markdown', {'for': 'markdown'}
 Plug 'vim-scripts/taglist.vim'
-" Plug 'vim-scripts/winmanager'
 Plug 'vim-scripts/ifdef-highlighting', {'for': ['c', 'cpp']}
 Plug 'psliwka/vim-smoothie'
 Plug 'JamshedVesuna/vim-markdown-preview', {'for': 'markdown'}
@@ -24,18 +23,14 @@ Plug 'lifepillar/pgsql.vim', {'for': 'sql'}
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'gko/vim-coloresque'
 Plug 'AndrewRadev/linediff.vim'
-Plug 'sergio-ivanuzzo/optcmd'
 Plug 'tpope/vim-surround'
 Plug 'mihaifm/bufstop'
 Plug 'rust-lang/rust.vim'
 Plug 'kevinoid/vim-jsonc'
 Plug 'preservim/nerdtree'
 Plug 'majutsushi/tagbar'
-Plug 'vim-scripts/matchit.zip'
 Plug 'luochen1990/rainbow'
 Plug 'git@github.com:f-cg/runproject.vim.git', { 'branch': 'main' }
-" Plug 'wincent/command-t'
-" Plug 'jeetsukumaran/vim-buffergator'
 "color themes below
 Plug 'morhetz/gruvbox'
 Plug 'lifepillar/vim-gruvbox8'
@@ -53,6 +48,8 @@ augroup filetype_vim
     autocmd!
     autocmd FileType vim setlocal foldmethod=marker
 augroup END
+nnoremap <leader>ev :vsplit $MYVIMRC<cr>
+nnoremap <leader>sv :source $MYVIMRC<cr>
 "---------------}}}
 
 " vim settings. -------------------------------------------- {{{
@@ -78,13 +75,9 @@ augroup remember_folds
   autocmd BufWinEnter * silent! loadview
 augroup END
 "set cul " highlight current line
-nnoremap <leader>ev :vsplit $MYVIMRC<cr>
-nnoremap <leader>sv :source $MYVIMRC<cr>
-" autocmd FileType javascript setlocal shiftwidth=4 tabstop=4 softtabstop=0 expandtab
-" autocmd FileType html setlocal shiftwidth=4 tabstop=4 softtabstop=0 expandtab
-" autocmd FileType c setlocal shiftwidth=4 tabstop=4 softtabstop=0 noexpandtab
 autocmd FileType json syntax match Comment +\/\/.\+$+
-
+" jump between html tags
+runtime macros/matchit.vim
 "----------}}}
 "switch buffers -----{{{
 nnoremap <leader>b :Bufstop<cr>
@@ -101,6 +94,8 @@ vmap ,r <Plug>MarkRegex
 nmap ,n <Plug>MarkClear
 "--------------}}}
 
+" rainbow settings. ------------------{{{
+let g:rainbow_active = 1 "0 if you want to enable it later via :RainbowToggle
 let g:rainbow_conf = {
 \	'guifgs': ['royalblue3', 'darkorange3', 'seagreen3', 'firebrick'],
 \	'ctermfgs': ['lightblue', 'lightyellow', 'lightcyan', 'lightmagenta'],
@@ -123,6 +118,7 @@ let g:rainbow_conf = {
 \		'css': 0,
 \	}
 \}
+"--------------}}}
 " taglist settings. -------------------------------------------- {{{
 let Tlist_Ctags_Cmd='ctags' "放在环境变量里，可直接执行
 let Tlist_Use_Right_Window=0 "窗口显示在右边，0则在左边
@@ -134,11 +130,7 @@ let Tlist_Process_File_Always=1 "实时更新tags
 let Tlist_Inc_Winwidth=0
 "---------------}}}
 
-" winmanager settings. -------------------------------------------- {{{
-" let g:winManagerWindowLayout='TagList'
-" nmap <C-w>m :WMToggle<cr>
 nmap <C-w>m :NERDTreeToggle<cr>
-"---------------}}}
 
 nmap <C-w>t :TagbarToggle<CR>
 
@@ -319,37 +311,22 @@ nnoremap <silent> <space>k  :<C-u>CocPrev<CR>
 nnoremap <silent> <space>p  :<C-u>CocListResume<CR>
 "------------}}}
 " popup scroll--------------------------{{{
-  function FindCursorPopUp()
-     let radius = get(a:000, 0, 2)
-     let srow = screenrow()
-     let scol = screencol()
-     " it's necessary to test entire rect, as some popup might be quite small
-     for r in range(srow - radius, srow + radius)
-       for c in range(scol - radius, scol + radius)
-         let winid = popup_locate(r, c)
-         if winid != 0
-           return winid
-         endif
-       endfor
-     endfor
-
-     return 0
-   endfunction
-
-   function ScrollPopUp(down)
-     let winid = FindCursorPopUp()
-     if winid == 0
-       return 0
-     endif
-
-     let pp = popup_getpos(winid)
-     call popup_setoptions( winid,
-           \ {'firstline' : pp.firstline + ( a:down ? 1 : -1 ) } )
-
-     return 1
-   endfunction
+function ScrollPopUp(down)
+let winlist = popup_list()
+if len(winlist) == 0
+return 0
+endif
+let winid = winlist[0]
+let pp = popup_getpos(winid)
+call popup_setoptions( winid, {'firstline' : pp.firstline + ( a:down ? 1 : -1 ) } )
+return 1
+endfunction
+" use <c-u> <c-d> to navigate on document popups
+" use <c-p> <c-n> to navigate on completion options
 nnoremap <expr> <c-d> ScrollPopUp(1) ? '<esc>' : '<c-d>'
 nnoremap <expr> <c-u> ScrollPopUp(0) ? '<esc>' : '<c-u>'
+inoremap <expr> <c-d> ScrollPopUp(1) ? '' : '<c-u>'
+inoremap <expr> <c-u> ScrollPopUp(0) ? '' : '<c-u>'
 "---------------}}}
 "-------------------------------}}}
 
