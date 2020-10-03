@@ -2,7 +2,6 @@
   "suggest.enablePreselect": true,
   "suggest.noselect":false,
   "signature.enable":true,
-  /* "diagnostic.displayByAle":true, */
   "suggest.echodocSupport": true,
   "suggest.maxCompleteItemCount": 20,
   "eslint.filetypes": [
