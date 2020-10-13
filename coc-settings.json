@@ -11,7 +11,9 @@
     "javascriptreact"
   ],
   "eslint.options": {"configFile": "/home/fcg/.eslintrc"},
+  "javascript.format.semicolons": "insert",
   "javascript.format.enabled": true,
+  "typescript.format.enabled": true,
   "javascript.preferences.quoteStyle": "single",
   "html.format.wrapLineLength": 128,
   "suggest.removeDuplicateItems": true,

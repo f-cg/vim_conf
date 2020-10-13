@@ -19,7 +19,6 @@ Plug 'vim-scripts/taglist.vim'
 Plug 'vim-scripts/ifdef-highlighting', {'for': ['c', 'cpp']}
 Plug 'psliwka/vim-smoothie'
 Plug 'JamshedVesuna/vim-markdown-preview', {'for': 'markdown'}
-Plug 'lifepillar/pgsql.vim', {'for': 'sql'}
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'gko/vim-coloresque'
 Plug 'AndrewRadev/linediff.vim'
@@ -68,12 +67,14 @@ set dictionary+=~/.vim/dict.txt
 set foldmethod=indent
 "set foldmethod=syntax
 set foldlevelstart=9
-"keep folds on save --
-augroup remember_folds
+augroup AutoSaveFolds
   autocmd!
-  autocmd BufWinLeave * mkview
-  autocmd BufWinEnter * silent! loadview
-augroup END
+  " view files are about 500 bytes
+  " bufleave but not bufwinleave captures closing 2nd tab
+  " nested is needed by bufwrite* (if triggered via other autocmd)
+  autocmd BufWinLeave,BufLeave,BufWritePost ?* nested silent! mkview!
+  autocmd BufWinEnter ?* silent! loadview
+augroup end
 "set cul " highlight current line
 autocmd FileType json syntax match Comment +\/\/.\+$+
 " jump between html tags
@@ -325,7 +326,7 @@ endfunction
 " use <c-p> <c-n> to navigate on completion options
 nnoremap <expr> <c-d> ScrollPopUp(1) ? '<esc>' : '<c-d>'
 nnoremap <expr> <c-u> ScrollPopUp(0) ? '<esc>' : '<c-u>'
-inoremap <expr> <c-d> ScrollPopUp(1) ? '' : '<c-u>'
+inoremap <expr> <c-d> ScrollPopUp(1) ? '' : '<c-d>'
 inoremap <expr> <c-u> ScrollPopUp(0) ? '' : '<c-u>'
 "---------------}}}
 "-------------------------------}}}
