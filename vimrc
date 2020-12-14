@@ -10,7 +10,7 @@ call plug#begin('~/.vim/plugged')
 " Plug 'SirVer/ultisnips'
 Plug 'honza/vim-snippets'
 Plug 'scrooloose/nerdcommenter'
-Plug 'davidhalter/jedi-vim', {'for': 'python'}
+" Plug 'davidhalter/jedi-vim', {'for': 'python'}
 "Plug 'brookhong/cscope.vim'
 Plug 'vim-scripts/autoload_cscope.vim'
 Plug 'godlygeek/tabular'
@@ -18,7 +18,6 @@ Plug 'plasticboy/vim-markdown', {'for': 'markdown'}
 Plug 'vim-scripts/taglist.vim'
 Plug 'vim-scripts/ifdef-highlighting', {'for': ['c', 'cpp']}
 Plug 'psliwka/vim-smoothie'
-Plug 'JamshedVesuna/vim-markdown-preview', {'for': 'markdown'}
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'gko/vim-coloresque'
 Plug 'AndrewRadev/linediff.vim'
@@ -82,6 +81,10 @@ runtime macros/matchit.vim
 "----------}}}
 "switch buffers -----{{{
 nnoremap <leader>b :Bufstop<cr>
+" tab width
+autocmd Filetype markdown setlocal tabstop=4 shiftwidth=4 expandtab
+autocmd Filetype html setlocal tabstop=4 shiftwidth=4 expandtab
+autocmd Filetype htmldjango setlocal tabstop=4 shiftwidth=4 expandtab
 "------------}}}
 
 "vim run file actions ----------{{{
@@ -96,10 +99,10 @@ nmap ,n <Plug>MarkClear
 "--------------}}}
 
 " rainbow settings. ------------------{{{
-let g:rainbow_active = 1 "0 if you want to enable it later via :RainbowToggle
+let g:rainbow_active = 0 "0 if you want to enable it later via :RainbowToggle
 let g:rainbow_conf = {
 \	'guifgs': ['royalblue3', 'darkorange3', 'seagreen3', 'firebrick'],
-\	'ctermfgs': ['lightblue', 'lightyellow', 'lightcyan', 'lightmagenta'],
+\	'ctermfgs': ['lightblue', 'lightcyan', 'lightmagenta'],
 \	'operators': '_,_',
 \	'parentheses': ['start=/(/ end=/)/ fold', 'start=/\[/ end=/\]/ fold', 'start=/{/ end=/}/ fold'],
 \	'separately': {
@@ -169,11 +172,6 @@ function! ClearCommentDefine()
   syn clear MyCommentOut2
 endfunction
 "-------------}}}
-
-" vim-markdown-preview settings. ---------------------------{{{
-" using grip for GitHub flavoured markdown
-let vim_markdown_preview_github=1
-"-----------------}}}
 
 " nerdcommenter settings. -------------------------------------------- {{{
 nmap <C-_>   <Plug>NERDCommenterToggle

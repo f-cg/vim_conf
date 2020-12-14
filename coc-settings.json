@@ -25,6 +25,12 @@
       "args": ["--background-index"],
       "rootPatterns": ["compile_flags.txt", "compile_commands.json", ".git/", ".hg/"],
       "filetypes": ["c", "cpp", "objc", "objcpp"]
+    },
+    "bash": {
+      "command": "bash-language-server",
+      "args": ["start"],
+      "filetypes": ["sh"],
+      "ignoredRootPaths": ["~"]
     }
   },
   // "python.linting.pylintEnabled": false,
