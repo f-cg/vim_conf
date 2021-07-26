@@ -37,7 +37,8 @@
   // "python.linting.flake8Enabled": false,
   // "python.linting.enabled": true,
   // "python.jediEnabled": false,
-  "python.pythonPath": "/usr/bin/python3",
+  "python.linting.pylintArgs": ["--generate-members"],
+  "python.pythonPath": "python3",
   "java.home":"/usr/lib/jvm/java-8-openjdk",
   "markdownlint.config": {"line_length": false}
 }

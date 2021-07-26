@@ -28,6 +28,7 @@ Plug 'kevinoid/vim-jsonc'
 Plug 'preservim/nerdtree'
 Plug 'majutsushi/tagbar'
 Plug 'luochen1990/rainbow'
+Plug 'sillybun/vim-repl'
 Plug 'git@github.com:f-cg/runproject.vim.git', { 'branch': 'main' }
 "color themes below
 Plug 'morhetz/gruvbox'
